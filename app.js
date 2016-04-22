@@ -1,6 +1,5 @@
 'use strict';
-const CONFIG = require('./config.js');
-
+const CONFIG = require('./config');
 const PORT = 8445;
 const request = require('request');
 const express = require('express');
@@ -35,7 +34,7 @@ const fbMessage = (recipientId, msg, cb) => {
   });
 };
 
-const getFirstMessagingEntry = (body) => {
+const getFirstMessagingEntry = (body) => {  
   const val = body.object == 'page' &&
     body.entry &&
     Array.isArray(body.entry) &&
@@ -155,11 +154,12 @@ app.get('/fb', (req, res) => {
   }
 });
 
-app.post('/fb', (req, res) => {  
-
+app.post('/fb', (req, res) => {    
   const messaging = getFirstMessagingEntry(req.body);
   
+
   if (messaging && messaging.message && messaging.recipient.id == CONFIG.FB_PAGE_ID) {    
+    console.log("Got a new message");
     const sender = messaging.sender.id;
     const sessionId = findOrCreateSession(sender);
 
