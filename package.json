@@ -1,0 +1,25 @@
+{
+  "name": "ybot",
+  "version": "1.0.0",
+   "dependencies": {
+    "request": "2.72.0",
+    "express": "4.13.4",
+    "node-wit": "3.2.2",
+    "body-parser": "1.15.0",
+    "node-cloud-vision-api": "0.2.0",
+    "foursquarevenues": "2.0.0"
+  },
+  "description": "experiment on Facebook Messenger bot + Google Cloud Vision API",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bot",
+    "messenger",
+    "vision",
+    "cloudvision"
+  ],
+  "author": "Adrián Catalán (@ykro)",
+  "license": "ISC"
+}
