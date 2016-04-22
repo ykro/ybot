@@ -41,7 +41,7 @@ const getFirstMessagingEntry = (body) => {
     Array.isArray(body.entry) &&
     body.entry.length > 0 &&
     body.entry[0] &&
-    body.entry[0].id == FB_PAGE_ID &&
+    body.entry[0].id == CONFIG.FB_PAGE_ID &&
     body.entry[0].messaging &&
     Array.isArray(body.entry[0].messaging) &&
     body.entry[0].messaging.length > 0 &&
@@ -258,54 +258,4 @@ app.post('/fb', (req, res) => {
   res.sendStatus(200);
 });
 
-
-
-
-
-
-
-/*
-const actions = {
-  say: (sessionId, msg, cb) => {
-    console.log(msg);
-    cb();
-  },
-  merge: (context, entities, cb) => {
-    const loc = firstEntityValue(entities, 'location');
-    const q = firstEntityValue(entities, 'local_search_query');
-    if (loc) {
-      context.loc = loc;
-      context.q = q;
-    }
-    cb(context);
-  },
-  error: (sessionId, msg) => {
-    console.log('Oops, I don\'t know what to do.');
-    cb();
-  },
-  'findPlace': (context, cb) => {
-      var params = {
-        'near': context.loc,
-        'query': context.q
-      };
-     
-      foursquare.getVenues(params, function(error, venues) {
-        if (!error) {     
-          var result = venues['response']['venues'][0];
-          var location = result['location'];
-          context.place = result['name'];          
-          context.address = location['address'] + ", " + location['crossStreet'] + ", " + 
-                          location['city'] + ", " + location['state'];
-          
-          cb(context);      
-        } else {
-          cb();
-        }
-      });    
-    
-  },
-};
-
-const client = new Wit(token, actions);
-client.interactive();
-*/
+console.log("Ready!");
