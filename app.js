@@ -120,13 +120,18 @@ const actions = {
      
       foursquare.getVenues(params, function(error, venues) {
         if (!error) {     
-          var result = venues['response']['venues'][0];
-          var location = result['location'];
-          context.place = result['name'];          
-          context.address = location['address'] + ", " + location['crossStreet'] + ", " + 
-                          location['city'] + ", " + location['state'];
-          
-          cb(context);      
+          if (venues['response'] && venues['response']['venues'].length > 0) {
+            var result = venues['response']['venues'][0];
+            var location = result['location'];
+            context.place = result['name'];          
+            context.address = location['address'] + ", " + location['crossStreet'] + ", " + 
+                            location['city'] + ", " + location['state'];
+            
+            cb(context);      
+
+          } else {
+            cb();c
+          }
         } else {
           cb();
         }
@@ -169,7 +174,8 @@ app.post('/fb', (req, res) => {
     if (atts) {
       const attachment = atts[0]
       if (attachment.type == 'image') {
-        console.log("analyzing " + attachment.payload.url);  
+        console.log("analyzing " + attachment.payload.url);
+
         const analyzingMsg = "Got it, you sent me a picture, give me a minute to analyze it";
         fbMessage(
             sender,
@@ -192,40 +198,54 @@ app.post('/fb', (req, res) => {
           
           var labelsDescriptions = [];
           var facesCharacteristics = [];
-          var characteristicsToDetect = ["joyLikelihood", "sorrowLikelihood", "angerLikelihood", "surpriseLikelihood", "underExposedLikelihood", "blurredLikelihood", "headwearLikelihood"];
+          const characteristicsToDetect = ["joyLikelihood", "sorrowLikelihood", "angerLikelihood", "surpriseLikelihood", "underExposedLikelihood", "blurredLikelihood", "headwearLikelihood"];
+          var face = 1;
           if (faceResponses) {    
             faceResponses.forEach(function (value) {
+              if (value.detectionConfidence > 0.4) {      
+                var possible = [];
+                var veryLikely = [];
+                
+                characteristicsToDetect.forEach(function (emValue) {
+                  if (value[emValue] == "VERY_LIKELY") {                  
+                    veryLikely.push(emValue.substring(0, emValue.indexOf("Likelihood")));          
+                  }
 
-            if (value.detectionConfidence > 0.4) {      
-              var characteristics = [];
-              characteristicsToDetect.forEach(function (emValue) {
-                if (value[emValue] == "VERY_LIKELY") {
-                  characteristics.push(emValue.substring(0,emValue.indexOf("Likelihood")));         
+                  if (value[emValue] == "POSSIBLE") {                  
+                    possible.push(emValue.substring(0, emValue.indexOf("Likelihood")));          
+                  }                                    
+                });
+
+                if (veryLikely.length > 0) {
+                  facesCharacteristics.push(ordinalSuffixOf(face) + " face is very likely to show " + veryLikely);  
                 }
-              });
 
-              facesCharacteristics.push(characteristics);
-              }     
-          });
+                if (possible.length > 0) {
+                  facesCharacteristics.push(ordinalSuffixOf(face) + " face is possible to show " + possible);  
+                }                
+              }
+              face++;     
+            });
           } 
 
           if (labelResponses) {  
             labelResponses.forEach(function (value) {
-            if (value.score > 0.4) {
-              labelsDescriptions.push(value.description);
-              
-              }     
+              if (labelsDescriptions.indexOf(value.description) === -1) {
+                labelsDescriptions.push(value.description);
+              }             
           });
           }
 
           var labels = "Picture may include " + labelsDescriptions.toString();              
-          fbMessage(
-            sender,
-            labels
-          );
+          if (labelsDescriptions.length > 0) {
+            fbMessage(
+              sender,
+              labels
+            );            
+          }
 
           if (facesCharacteristics.length > 0) {
-            var faces = "I identified " + facesCharacteristics.length + " faces with very likely to include " + facesCharacteristics.toString();
+            var faces = "I identified " + faceResponses.length + " faces. " + facesCharacteristics.toString();
             fbMessage(
               sender,
               faces
@@ -257,5 +277,20 @@ app.post('/fb', (req, res) => {
   }
   res.sendStatus(200);
 });
+
+function ordinalSuffixOf(i) {
+    const j = i % 10,
+          k = i % 100;
+    if (j == 1 && k != 11) {
+        return i + "st";
+    }
+    if (j == 2 && k != 12) {
+        return i + "nd";
+    }
+    if (j == 3 && k != 13) {
+        return i + "rd";
+    }
+    return i + "th";
+}
 
 console.log("Ready!");
